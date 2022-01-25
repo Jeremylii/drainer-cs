@@ -112,9 +112,9 @@ fix-sql-file = "findpt_lj_fix.sql"
 # 源数据库实例的配置
 [[source-db]]
     #host = "127.0.0.1"
-    #port = 4000
-    #user = "root"
-    #password = "sa123456"
+    #port = 3306
+    #user = "user"
+    #password = "xxxxx"
     # 源数据库实例的 id，唯一标识一个数据库实例
     #instance-id = "source-1"
     # 使用 TiDB 的 snapshot 功能，如果开启的话会使用历史数据进行对比
@@ -122,18 +122,18 @@ fix-sql-file = "findpt_lj_fix.sql"
     # 设置数据库的 sql-mode，用于解析表结构
     # sql-mode = ""
     type = "Oracle"
-    user = "findpt_lj"
-    password = "findpt_lj"
-    connectString = "172.16.4.87:1521/oratidb?connect_timeout=2"
+    user = "user"
+    password = "xxxxx"
+    connectString = "xxx.xx.xx.xx:1521/xxxx?connect_timeout=2"
     instance-id = "source-1"
     #charset = "zhs16gbk" 
 
 # 目标数据库实例的配置
 [target-db]
-    host = "172.16.4.81"
-    port = 4100
-    user = "findpt"
-    password = "findpt"
+    host = "xxx.xx.xx.xx"
+    port = 3306
+    user = "user"
+    password = "xxxx"
     instance-id = "source-2"
     # 使用 TiDB 的 snapshot 功能，如果开启的话会使用历史数据进行对比
     # snapshot = "2016-10-08 16:45:26"
