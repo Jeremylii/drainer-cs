@@ -1,7 +1,7 @@
-node-id = "172.16.4.81:8257"
-addr = "172.16.4.81:8257"
+node-id = "xxx.xx.xx.xx:8257"
+addr = "xxx.xx.xx.xx:8257"
 data-dir = "data.drainer"
-pd-urls = "http://172.16.4.81:3379"
+pd-urls = "http://xxx.xx.xx.xx:3379"
 initial-commit-ts = -1
 detect-interval = 10
 log-file = "drainer.log"
@@ -27,10 +27,10 @@ log-dir = "data.drainer.replay"
 
 # the downstream mysql protocol database
 [syncer.to]
-host = "172.16.4.81"
+host = "xxx.xx.xx.xx"
 user = "abcuser1"
-password = "sa123456"
-port = 5000
+password = "xxxx"
+port = 3306
 
 [syncer.to.checkpoint]
 schema = "binlog1"
