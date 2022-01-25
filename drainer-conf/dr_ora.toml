@@ -1,7 +1,7 @@
-node-id = "172.16.4.81:8258"
-addr = "172.16.4.81:8258"
+node-id = "xxx.xx.xx.xx:8258"
+addr = "xxx.xx.xx.xx:8258"
 data-dir = "data.drainer"
-pd-urls = "http://172.16.4.81:3379"
+pd-urls = "http://xxx.xx.xx.xx:3379"
 initial-commit-ts = -1
 detect-interval = 10
 log-file = "drainer.log"
@@ -36,17 +36,17 @@ log-dir = "data.drainer.replay"
 
 # the downstream mysql protocol database
 [syncer.to]
-host = "172.16.4.87"
-user = "findpt_lj"
-password = "findpt_lj"
+host = "xxx.xx.xx.xx"
+user = "user"
+password = "xxxx"
 port = 1521
-oracle-service-name = "oratidb"
+oracle-service-name = "xxxx"
 
 #[syncer.to.checkpoint]
 #type = "oracle"
 #schema = "binlog1"
-#host = "172.16.4.87"
+#host = "xxx.xx.xx.xx"
 #port = 1521
 #user = "binlog1"
-#password = "binlog1"
-#oracle-service-name = "oratidb"
+#password = "xxxx"
+#oracle-service-name = "xxx"
