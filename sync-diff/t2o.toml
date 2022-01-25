@@ -1,0 +1,141 @@
+# Diff Configuration.
+
+######################### Global config #########################
+
+# 日志级别，可以设置为 info、debug
+log-level = "info"
+
+# sync-diff-inspector 根据主键／唯一键／索引将数据划分为多个 chunk，
+# 对每一个 chunk 的数据进行对比。使用 chunk-size 设置 chunk 的大小
+chunk-size = 100000
+
+# 检查数据的线程数量
+check-thread-count = 40
+
+# 抽样检查的比例，如果设置为 100 则检查全部数据
+sample-percent = 100
+
+# 通过计算 chunk 的 checksum 来对比数据，如果不开启则逐行对比数据
+use-checksum = true
+
+# 如果设置为 true 则只会通过计算 checksum 来校验数据，如果上下游的 checksum 不一致也不会查出数据再进行校验
+only-use-checksum = false
+
+# 是否使用上次校验的 checkpoint，如果开启，则只校验上次未校验以及校验失败的 chunk
+use-checkpoint = true
+
+# 不对比数据
+ignore-data-check = false
+
+# 不对比表结构
+ignore-struct-check = true
+
+# 保存用于修复数据的 sql 的文件名称
+fix-sql-file = "findpt_lj_fix.sql"
+#fix-target = "Oracle"
+
+######################### Tables config #########################
+
+# 如果需要对比大量的不同库名或者表名的表的数据，或者用于校验上游多个分表与下游总表的数据，可以通过 table-rule 来设置映射关系
+# 可以只配置 schema 或者 table 的映射关系，也可以都配置
+#[[table-rules]]
+    # schema-pattern 和 table-pattern 支持通配符 *?
+    #schema-pattern = "findpt"
+    #table-pattern = "t_*"
+    #target-schema = "findpt_lj"
+    #target-table = "t"
+
+# 配置需要对比的*目标数据库*中的表
+[[check-tables]]
+    # 目标库中数据库的名称
+    schema = "findpt"
+    oracle-schema = "findpt_lj"
+
+    # 需要检查的表
+    #tables = ["t4","t3","t6","customer","account","customer2","account2"]
+    tables = ["account","customer"]
+    #tables = ["t1","branch","customer"]
+
+    # 支持使用正则表达式配置检查的表，需要以‘~’开始，
+    # 下面的配置会检查所有表名以‘test’为前缀的表
+    # tables = ["~^test.*"]
+    # 下面的配置会检查配置库中所有的表
+    # tables = ["~^"]
+
+# 对部分表进行特殊的配置，配置的表必须包含在 check-tables 中
+#[[table-config]]
+    # 目标库中数据库的名称
+    #schema = "findpt_lj"
+
+    # 表名
+    #table = "test3"
+
+    # 指定用于划分 chunk 的列，如果不配置该项，sync-diff-inspector 会选取一个合适的列（主键／唯一键／索引）
+    #index-fields = "id"
+
+    # 指定检查的数据的范围，需要符合 sql 中 where 条件的语法
+    #range = "age > 10 AND age < 20"
+
+    # 如果是对比多个分表与总表的数据，则设置为 true
+    #is-sharding = false
+
+    # 在某些情况下字符类型的数据的排序会不一致，通过指定 collation 来保证排序的一致，
+    # 需要与数据库中 charset 的设置相对应
+    # collation = "latin1_bin"
+
+    # 忽略某些列的检查，例如 sync-diff-inspector 目前还不支持的一些类型（json，bit，blob 等），
+    # 或者是浮点类型数据在 TiDB 和 MySQL 中的表现可能存在差异，可以使用 ignore-columns 忽略检查这些列
+    # ignore-columns = ["name"]
+
+# 下面是一个对比不同库名和表名的两个表的配置示例
+#[[table-config]]
+    # 目标库名
+    #schema = "findpt"
+
+    # 目标表名
+    #table = "test2"
+
+    # 非分库分表场景，设置为 false
+    #is-sharding = false
+
+    # 源数据的配置
+    #[[table-config.source-tables]]
+        # 源库的实例 id
+        #instance-id = "source-2"
+        # 源数据库的名称
+        #schema = "findpt_tmp"
+        # 源表的名称
+        #table  = "test1"
+
+######################### Databases config #########################
+
+# 源数据库实例的配置
+[[source-db]]
+    #host = "127.0.0.1"
+    #port = 4000
+    #user = "root"
+    #password = "sa123456"
+    # 源数据库实例的 id，唯一标识一个数据库实例
+    #instance-id = "source-1"
+    # 使用 TiDB 的 snapshot 功能，如果开启的话会使用历史数据进行对比
+    # snapshot = "2016-10-08 16:45:26"
+    # 设置数据库的 sql-mode，用于解析表结构
+    # sql-mode = ""
+    type = "Oracle"
+    user = "findpt_lj"
+    password = "findpt_lj"
+    connectString = "172.16.4.87:1521/oratidb?connect_timeout=2"
+    instance-id = "source-1"
+    #charset = "zhs16gbk" 
+
+# 目标数据库实例的配置
+[target-db]
+    host = "172.16.4.81"
+    port = 4100
+    user = "findpt"
+    password = "findpt"
+    instance-id = "source-2"
+    # 使用 TiDB 的 snapshot 功能，如果开启的话会使用历史数据进行对比
+    # snapshot = "2016-10-08 16:45:26"
+    # 设置数据库的 sql-mode，用于解析表结构
+    # sql-mode = ""
