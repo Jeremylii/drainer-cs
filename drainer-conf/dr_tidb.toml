@@ -1,0 +1,36 @@
+node-id = "172.16.4.81:8257"
+addr = "172.16.4.81:8257"
+data-dir = "data.drainer"
+pd-urls = "http://172.16.4.81:3379"
+initial-commit-ts = -1
+detect-interval = 10
+log-file = "drainer.log"
+
+[syncer]
+db-type = "tidb"
+ignore-schemas = "INFORMATION_SCHEMA,PERFORMANCE_SCHEMA,mysql"
+replicate-do-db = ["findpt","sbtest1"]
+sync-ddl = true
+#enable-detect = true
+txn-batch = 100
+worker-count = 20
+safe-mode = false
+
+[[syncer.table-migrate-rule]]
+[syncer.table-migrate-rule.source]
+schema = "findpt"
+[syncer.table-migrate-rule.target]
+schema = "findpt_lj"
+
+[syncer.relay]
+log-dir = "data.drainer.replay"
+
+# the downstream mysql protocol database
+[syncer.to]
+host = "172.16.4.81"
+user = "abcuser1"
+password = "sa123456"
+port = 5000
+
+[syncer.to.checkpoint]
+schema = "binlog1"
