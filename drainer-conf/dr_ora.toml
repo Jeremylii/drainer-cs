@@ -1,0 +1,52 @@
+node-id = "172.16.4.81:8258"
+addr = "172.16.4.81:8258"
+data-dir = "data.drainer"
+pd-urls = "http://172.16.4.81:3379"
+initial-commit-ts = -1
+detect-interval = 10
+log-file = "drainer.log"
+log-level = "info"
+
+[syncer]
+db-type = "oracle"
+ignore-schemas = "INFORMATION_SCHEMA,PERFORMANCE_SCHEMA,mysql"
+replicate-do-db = ["findpt_gin","sbtest1","findpt"]
+sync-ddl = true
+#enable-detect = true
+txn-batch = 100
+worker-count = 20
+safe-mode = false
+ignore-txn-commit-ts = [430708002815475865,430708002906964053,430708007363412093,430708007389626742]
+
+[[syncer.table-migrate-rule]]
+[syncer.table-migrate-rule.source]
+schema = "findpt"
+[syncer.table-migrate-rule.target]
+schema = "findpt_lj"
+
+[[syncer.replicate-do-table]]
+db-name ="test"
+tbl-name = "mls_t1"
+[[syncer.replicate-do-table]]
+db-name ="test"
+tbl-name = "mls_t2"
+
+[syncer.relay]
+log-dir = "data.drainer.replay"
+
+# the downstream mysql protocol database
+[syncer.to]
+host = "172.16.4.87"
+user = "findpt_lj"
+password = "findpt_lj"
+port = 1521
+oracle-service-name = "oratidb"
+
+#[syncer.to.checkpoint]
+#type = "oracle"
+#schema = "binlog1"
+#host = "172.16.4.87"
+#port = 1521
+#user = "binlog1"
+#password = "binlog1"
+#oracle-service-name = "oratidb"
