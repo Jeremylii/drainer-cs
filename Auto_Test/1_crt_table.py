@@ -1,128 +1,171 @@
 # -*- coding: utf-8 -*-
 #
 """
-写入随机大小的LOB数据
+生成建表语句
 """
 
-import random
-import string
-import os
-import subprocess
-import mysql.connector
-import time
-from datetime import date, datetime, timedelta
+datatype_mapping = {
+	"TINYINT":"NUMBER(3, 0)",
+	"SMALLINT":"NUMBER(5, 0)",
+	"MEDIUMINT":"NUMBER(7, 0)",
+	"INT":"NUMBER(10, 0)",
+	"INTEGER":"NUMBER(10, 0)",
+	"BIGINT":"NUMBER(19, 0)",
+	"FLOAT":"FLOAT",
+	"DOUBLE":"FLOAT(24)",
+	"DECIMAL":"FLOAT(24)",
+	"REAL":"FLOAT(24)",
 
-def crt_blob_file(file_dir="/tmp",file_num=3,file_maxsize_kb=10):
-    """
-    create blob files.
-    """
-    for i in range(file_num):
-        a = ''.join(random.sample(string.ascii_letters+string.digits,random.randint(3,9)))
-        file_name="ddfile_"+a+".dat"
-        shellcmd_str="dd if=/dev/zero of=%s/%s bs=1k count=%s" %(file_dir,file_name, random.randint(1,file_maxsize_kb) )
-        os.system(shellcmd_str)
-    shellcmd_str="ls -l %s" %(file_dir)
-    os.system(shellcmd_str)
+	"DATE":"DATE",
+	"TIME":"DATE",
+	"DATETIME":"DATE",
+	"TIMESTAMP":"DATE",
+	"YEAR":"NUMBER",
 
-def ist_blob_data(db_conn={}, data_dir="/tmp" ):
-    """
-    insert blobs
+	"CHAR":"CHAR",
+	"VARCHAR":"VARCHAR2",
+	"BIT":"RAW",
+	"TEXT":"CLOB",
+	"TINYTEXT":"VARCHAR2",
+	"MEDIUMTEXT":"CLOB",
+	"LONGTEXT":"CLOB",
 
-    cnx = mysql.connector.connect(**mys88)
-    cursor = cnx.cursor()
-    cursor.execute(add_salary, data_salary)
-    cnx.commit()
-    cursor.close()
-    cnx.close()
-    """
-    WorkDir = data_dir
-    FileInfo = {}
-    for root, dirs, files in os.walk(WorkDir):
-        print(root, dirs, files)
-    for i in files:
-        _filename = WorkDir+"/"+i
-        _filesize = os.path.getsize(_filename)
-        _SqlName = _filename+" "+str(_filesize)
-        print(_filename, _filesize, type(_filename), type(_filesize), _SqlName)
-        fp = open(_filename, 'rb')
-        img = fp.read()
-        add_employee = ("INSERT INTO test.t_blob( b, c, d)  VALUES (  %s, %s, %s)")
-        data_employee = (_filename, str(_filesize), img)
-        print("insert_mys_data %s %s %s" %("mys81", add_employee, "data_employee"))
-        insert_mys_data(mys81,add_employee,data_employee)
-        time.sleep(1)
+	"BINARY":"",
+	"VARBINARY":"",
 
-def ist_clob_data(db_conn={}, data_dir="/tmp", data_size=10):
-    """
-    insert blobs
+	"BLOB":"BLOB",
+	"TINYBLOB":"RAW",
+	"MEDIUMBLOB":"BLOB",
+	"LONGBLOB":"BLOB",
+	"ENUM":"VARCHAR2",
+	"SET":"VARCHAR2"
+}
 
-    cnx = mysql.connector.connect(**mys88)
-    cursor = cnx.cursor()
-    cursor.execute(add_salary, data_salary)
-    cnx.commit()
-    cursor.close()
-    cnx.close()
-    """
-    cn_str = """
-TiDB 是 PingCAP 公司自主设计、研发的开源分布式关系型数据库，
-是一款同时支持在线事务处理与在线分析处理 (Hybrid Transactional
-and Analytical Processing, HTAP) 的融合型分布式数据库产品，
-具备水平扩容或者缩容、金融级高可用、实时 HTAP、云原生的分布式数据库、
-兼容 MySQL 5.7 协议和 MySQL 生态等重要特性。目标是为用户提供一站式 
-OLTP (Online Transactional Processing)、OLAP (Online Analytical Processing)、
-HTAP 解决方案。TiDB 适合高可用、强一致要求较高、数据规模较大等各种应用场景
-"""
-    special_str = """
-~!@#$%^&*()_++?><:"`-=,./;'[]{}\' 	|'
-"""
-    if 
-    a = ''.join(random.sample(string.ascii_letters+string.digits,40))
-    b = ''.join(random.sample(special_str,random.randint(0,10)))
-    c = ''.join(random.sample(cn_str,random.randint(10,30)))
-    
-    for root, dirs, files in os.walk(WorkDir):
-        print(root, dirs, files)
-    for i in files:
-        _filename = WorkDir+"/"+i
-        _filesize = os.path.getsize(_filename)
-        _SqlName = _filename+" "+str(_filesize)
-        print(_filename, _filesize, type(_filename), type(_filesize), _SqlName)
-        fp = open(_filename, 'rb')
-        img = fp.read()
-        add_employee = ("INSERT INTO test.t_blob( b, c, d)  VALUES (  %s, %s, %s)")
-        data_employee = (_filename, str(_filesize), img)
-        print("insert_mys_data %s %s %s" %("mys81", add_employee, "data_employee"))
-        insert_mys_data(mys81,add_employee,data_employee)
-        time.sleep(1)
+datatype_length = {
+	"TINYINT":"NUMBER(3, 0)",
+	"SMALLINT":"NUMBER(5, 0)",
+	"MEDIUMINT":"NUMBER(7, 0)",
+	"INT":"NUMBER(10, 0)",
+	"INTEGER":"NUMBER(10, 0)",
+	"BIGINT":"NUMBER(19, 0)",
+	"FLOAT":"FLOAT",
+	"DOUBLE":"FLOAT(24)",
+	"DECIMAL":"FLOAT(24)",
+	"REAL":"FLOAT(24)",
 
+	"DATE":"DATE",
+	"TIME":"DATE",
+	"DATETIME":"DATE",
+	"TIMESTAMP":"DATE",
+	"YEAR":"NUMBER",
 
-def insert_mys_data(DBUrl="", DynSql="", DynPara=""):
-    """
-    连接数据库并写入数据
-    """
-    cnx = mysql.connector.connect(**DBUrl)
-    cursor = cnx.cursor()
-    #cursor.execute("select now(),version()")
-    #for (a,b) in cursor:
-        #print(a,b)
-    cursor.execute(DynSql, DynPara)
-    cnx.commit()
-    cnx.close()
-    #print(DynSql, DynPara, type(DynSql), type(DynPara))
+	"CHAR":"255",
+	"VARCHAR":"16383",
+	"BIT":"RAW",
+	"TEXT":"65535",
+	"TINYTEXT":"255",
+	"MEDIUMTEXT":"16777215",
+	"LONGTEXT":"4294967295",
 
+	"BINARY":"",
+	"VARBINARY":"",
 
-mys81 = {
-    'user' : 'root', 
-    'password' : 'sa123456',
-    'host' : '172.16.4.81',
-    'port' : '4100',
-    'database' : 'test',
-    'raise_on_warnings' : True
+	"BLOB":"65535",
+	"TINYBLOB":"255",
+	"MEDIUMBLOB":"16777215",
+	"LONGBLOB":"4294967295",
+	"ENUM":"VARCHAR2",
+	"SET":"VARCHAR2"
 }
 
 
-crt_blob_file("/data1/tmp/lob_data",5,100000)
-ist_blob_data(mys81,"/data1/tmp/lob_data")
+char_type_contain =  {"tabname": "TEST_CHAR1", "tabcol": ["CHAR(20)", "VARCHAR(20)", "VARCHAR(5000)", "VARCHAR(15000)", "TEXT"]}
+int_type_contain =  {"tabname": "TEST_INT1", "tabcol": ["INT", "DOUBLE", "FLOAT(4)", "DECIMAL(12,1)", "INTEGER(11)"]}
+date_type_contain =  {"tabname": "TEST_DATE1", "tabcol": ["DATETIME", "DATE"]}
+lob_type_contain =  {"tabname": "TEST_LOB1", "tabcol": ["TEXT", "LONGTEXT", "BLOB"]}
 
-#os.system(shellcmd_str)
+
+
+
+def f_crt_tab_str(dbtype,tabinfo):
+    """
+    Generate create table DDL , Tidb is source
+    """
+    table_prefix= {"oracle":"id INT not null primary key ,\n  ts DATE ,",
+               "mysql":"id INT not null primary key ,\n  ts DATETIME,",
+               "tidb":"id INT not null primary key AUTO_INCREMENT,\n  ts DATETIME default now(),"
+              }
+
+    table_suffix= {"oracle": " ",
+               "mysql": "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ",
+               "tidb": "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin "
+              }
+
+    tab_nam = tabinfo["tabname"]
+    col_lst = tabinfo["tabcol"]
+
+    tab_prefix = table_prefix[dbtype]
+    tab_suffix = table_suffix[dbtype]
+    i_len = len(col_lst)
+    i = 1
+    print ("""create table %s \n (%s """ % (tab_nam, tab_prefix))
+    for col_type in col_lst:
+        if dbtype == "oracle" and "(" in col_type:
+            col_type1 = col_type.split("(")[0]
+            col_type2 = col_type.split("(")[1]
+            if "(" in datatype_mapping[col_type1]:
+                col_type = datatype_mapping[col_type1]
+            else:
+            	col_type = datatype_mapping[col_type1]+"("+col_type2
+
+        if i < i_len:
+        	col_str = "  col%s %s," %(i, col_type)
+        else:
+        	col_str = "  col%s %s" %(i, col_type)
+
+        print (col_str)
+        i = i + 1
+    print (") " + tab_suffix + ";")
+
+
+def f_crt_tab_exec(dbtype,tabinfo):
+    """
+    Exec create table DDL 
+    """
+
+
+
+#f_crt_tab_tidb(char_type_contain)
+f_crt_tab_str("tidb", char_type_contain)
+f_crt_tab_str("mysql", char_type_contain)
+f_crt_tab_str("oracle", char_type_contain)
+
+
+f_crt_tab_str("tidb", int_type_contain)
+f_crt_tab_str("oracle", int_type_contain)
+
+
+import cx_Oracle
+dsn_tns = cx_Oracle.makedsn('172.16.4.87', '1521', service_name='gbk') 
+conn = cx_Oracle.connect(user="ljs_20211207", password="ljs_20211207", dsn=dsn_tns )
+
+c = conn.cursor()
+
+c.execute("""
+    begin
+        execute immediate 'drop table TEST_INT1';
+        exception when others then if sqlcode <> -942 then raise; end if;
+    end;""")
+
+c.execute("""
+        create table TEST_INT1 
+        (id INT not null primary key ,
+        ts DATE , 
+        col1 INT,
+        col3 FLOAT(4),
+        col4 FLOAT(24),
+        col5 NUMBER(10, 0)
+        );
+    """)
+
 
