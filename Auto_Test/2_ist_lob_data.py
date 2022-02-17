@@ -12,6 +12,7 @@ import mysql.connector
 import time
 from datetime import date, datetime, timedelta
 
+
 def crt_blob_file(file_dir="/tmp",file_num=3,file_maxsize_kb=10):
     """
     create blob files.
@@ -24,44 +25,12 @@ def crt_blob_file(file_dir="/tmp",file_num=3,file_maxsize_kb=10):
     shellcmd_str="ls -l %s" %(file_dir)
     os.system(shellcmd_str)
 
-def ist_blob_data(db_conn={}, data_dir="/tmp" ):
-    """
-    insert blobs
 
-    cnx = mysql.connector.connect(**mys88)
-    cursor = cnx.cursor()
-    cursor.execute(add_salary, data_salary)
-    cnx.commit()
-    cursor.close()
-    cnx.close()
+def crt_clob_str(data_size=100):
     """
-    WorkDir = data_dir
-    FileInfo = {}
-    for root, dirs, files in os.walk(WorkDir):
-        print(root, dirs, files)
-    for i in files:
-        _filename = WorkDir+"/"+i
-        _filesize = os.path.getsize(_filename)
-        _SqlName = _filename+" "+str(_filesize)
-        print(_filename, _filesize, type(_filename), type(_filesize), _SqlName)
-        fp = open(_filename, 'rb')
-        img = fp.read()
-        add_employee = ("INSERT INTO test.t_blob( b, c, d)  VALUES (  %s, %s, %s)")
-        data_employee = (_filename, str(_filesize), img)
-        print("insert_mys_data %s %s %s" %("mys81", add_employee, "data_employee"))
-        insert_mys_data(mys81,add_employee,data_employee)
-        time.sleep(1)
-
-def ist_clob_data(db_conn={}, data_dir="/tmp", data_size=10):
-    """
-    insert blobs
-
-    cnx = mysql.connector.connect(**mys88)
-    cursor = cnx.cursor()
-    cursor.execute(add_salary, data_salary)
-    cnx.commit()
-    cursor.close()
-    cnx.close()
+    split num
+    cn_str:300 letter:60 spe:40
+    #25%汉字+25%字母+1%特殊字符
     """
     cn_str = """
 TiDB 是 PingCAP 公司自主设计、研发的开源分布式关系型数据库，
@@ -72,16 +41,48 @@ and Analytical Processing, HTAP) 的融合型分布式数据库产品，
 OLTP (Online Transactional Processing)、OLAP (Online Analytical Processing)、
 HTAP 解决方案。TiDB 适合高可用、强一致要求较高、数据规模较大等各种应用场景
 """
-    special_str = """
-~!@#$%^&*()_++?><:"`-=,./;'[]{}\' 	|'
-"""
-    if 
-    a = ''.join(random.sample(string.ascii_letters+string.digits,40))
-    b = ''.join(random.sample(special_str,random.randint(0,10)))
-    c = ''.join(random.sample(cn_str,random.randint(10,30)))
-    
+    special_str = """~!@#$%^&*()_++?><:"`-=,./;'[]{}\' 	|'*&$.,/\\"""
+
+    if data_size<400:
+        a_size = random.randint(int(data_size/6),int(data_size/4))
+        b_size = random.randint(int(data_size/6),int(data_size/4))
+        c_size = max(data_size - b_size*3 - a_size, 0)
+        print (a_size, b_size, c_size)
+        a = ''.join(random.sample(string.ascii_letters+string.digits, a_size))
+        b = ''.join(random.sample(cn_str, b_size))
+        c = ''.join(random.sample(special_str, c_size))
+        comment = "total %s szie, %s normal letters, %s cn letters, %s special letters" %(data_size, a_size, b_size, c_size)
+        print (comment)
+        return (comment, len(a+b+c), a+b+c)
+    else:
+        a = ''.join(random.sample(string.ascii_letters+string.digits, 10))
+        b = ''.join(random.sample(cn_str, 130))
+        c = ''.join(random.sample(special_str, 10))
+        mult = int((data_size - 400)/10)
+        comment = "total %s szie, %s normal letters, %s cn letters, %s special letters" %(data_size, int(mult*10), 130, 10)
+        print (comment)
+        return (comment, len(a*mult+b+c), a*mult+b+c)
+
+
+def insert_blob_data(db_conn={}, data_dir="/tmp" , data_size=10):
+    """
+    insert blobs
+
+    cnx = mysql.connector.connect(**mys88)
+    cursor = cnx.cursor()
+    cursor.execute(add_salary, data_salary)
+    cnx.commit()
+    cursor.close()
+    cnx.close()
+    """
+
+    crt_blob_file(data_dir, random.randint(1,5), int(data_size/10)*10 )
+
+    WorkDir = data_dir
+    FileInfo = {}
     for root, dirs, files in os.walk(WorkDir):
         print(root, dirs, files)
+        
     for i in files:
         _filename = WorkDir+"/"+i
         _filesize = os.path.getsize(_filename)
@@ -94,6 +95,25 @@ HTAP 解决方案。TiDB 适合高可用、强一致要求较高、数据规模�
         print("insert_mys_data %s %s %s" %("mys81", add_employee, "data_employee"))
         insert_mys_data(mys81,add_employee,data_employee)
         time.sleep(1)
+
+def insert_clob_data(db_conn={}, data_dir="/tmp", data_size=10):
+    """
+    insert blobs
+
+    cnx = mysql.connector.connect(**mys88)
+    cursor = cnx.cursor()
+    cursor.execute(add_salary, data_salary)
+    cnx.commit()
+    cursor.close()
+    cnx.close()
+    """
+
+    add_employee = ("INSERT INTO test.t_clob(b, c, d)  VALUES (%s, %s, %s)")
+    data_employee = crt_clob_str(data_size)
+    #data_employee = ("", len(clob_data), clob_data)
+    print("insert_mys_data %s %s %s" %("mys81", add_employee, "data_employee"))
+    insert_mys_data(mys81, add_employee, data_employee)
+    time.sleep(1)
 
 
 def insert_mys_data(DBUrl="", DynSql="", DynPara=""):
@@ -121,8 +141,8 @@ mys81 = {
 }
 
 
-crt_blob_file("/data1/tmp/lob_data",5,100000)
-ist_blob_data(mys81,"/data1/tmp/lob_data")
-
+#crt_blob_file("/data1/tmp/lob_data",5,1000)
+insert_blob_data(mys81, "/data1/tmp/lob_data", random.randint(10,1000))
+insert_clob_data(mys81, "/data1/tmp/lob_data", random.randint(1,1000))
 #os.system(shellcmd_str)
 
